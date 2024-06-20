@@ -20,21 +20,15 @@ Follow these instructions to get the project up and running on your local machin
 
 Installation
 Clone the repository:
-
-bash
-Copy code
-git clone https://github.com/your-username/express-backend.git
+git clone https://github.com/Aayu-1011/express-backend.git
 cd express-backend
 Install dependencies:
 
-bash
-Copy code
+
 npm install
 Running the Server
 To start the Express server locally:
 
-bash
-Copy code
 npm start
 The server will run at http://localhost:3000 by default.
 
@@ -56,16 +50,7 @@ URL: http://localhost:3000/read
 Method: GET
 Query Parameter: index (0-index for retrieving submissions)
 Description: Retrieves the (index+1)th form submission from db.json.
-Project Structure
 
-├── src/                  # Source files
-│   ├── index.ts          # Express server setup
-│   ├── routes.ts         # Route definitions
-├── dist/                 # Compiled JavaScript files (generated)
-├── db.json               # JSON database file for submissions
-├── node_modules/         # Node.js modules (generated)
-├── package.json          # Project dependencies and scripts
-└── tsconfig.json         # TypeScript compiler configuration
 
 License
 This project is licensed under the MIT License - see the LICENSE file for details.
