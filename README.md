@@ -1,64 +1,109 @@
-Express Backend Server
-This repository contains an Express backend server built with TypeScript, utilizing a JSON file as a simple database for storing form submissions.
+# Backend-Server
+### `index.ts` Explanation
 
-Features
-Endpoints:
+#### Imports and Middleware Setup
+```typescript
+import express, { Request, Response } from 'express';
+import bodyParser from 'body-parser';
 
-/ping - GET request that always returns true.
-/submit - POST request to save form submissions.
-/read - GET request with query parameter for retrieving saved submissions.
-Database:
+const app = express();
+const port = process.env.PORT || 3000;
 
-Uses a JSON file (db.json) to store submissions.
-Prerequisites
-Before running the server locally, ensure you have the following installed:
+// Middleware setup
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+```
+- **Imports**: Imports necessary modules from `express` and `body-parser`.
+- **App Initialization**: Initializes an Express application (`app`) and sets the port from the environment variables or defaults to 3000.
+- **Middleware Setup**: Configures `body-parser` middleware to handle JSON and URL-encoded data.
 
-Node.js and npm
-TypeScript
-Getting Started
-Follow these instructions to get the project up and running on your local machine.
+#### Example Routes
+```typescript
+// Example routes with explicitly defined types
+app.get('/ping', (req: Request, res: Response) => {
+    res.json({ success: true });
+});
 
-Installation
-Clone the repository:
-git clone https://github.com/Aayu-1011/express-backend.git
-cd express-backend
-Install dependencies:
+app.post('/submit', (req: Request, res: Response) => {
+    // Example of handling form submission with type-checked req.body
+    const { name, email, phone, github_link, stopwatch_time } = req.body;
+    // Process the submission data as needed
+    res.json({ message: 'Form submitted successfully' });
+});
 
-
-npm install
-Running the Server
-To start the Express server locally:
-
-npm start
-The server will run at http://localhost:3000 by default.
-
-Available Endpoints
-Ping Endpoint:
-
-URL: http://localhost:3000/ping
-Method: GET
-Description: Returns { "success": true }.
-Submit Endpoint:
-
-URL: http://localhost:3000/submit
-Method: POST
-Parameters: name, email, phone, github_link, stopwatch_time
-Description: Saves form submissions to db.json.
-Read Endpoint:
-
-URL: http://localhost:3000/read
-Method: GET
-Query Parameter: index (0-index for retrieving submissions)
-Description: Retrieves the (index+1)th form submission from db.json.
+app.get('/read', (req: Request, res: Response) => {
+    const index = Number(req.query.index) || 0;
+    // Example of type-checked query parameter usage
+    res.json({ message: `Reading submission at index ${index}` });
+});
 
 
-License
-This project is licensed under the MIT License - see the LICENSE file for details.
+- **Example routes definition**: Defines three routes using Express:
 
+  1. **GET `/ping`**: Responds with a JSON object `{ success: true }`.
+  2. **POST `/submit`**: Handles form submissions and extracts data (`name`, `email`, `phone`, `github_link`, `stopwatch_time`) from `req.body`. It responds with `{ message: 'Form submitted successfully' }`.
+  3. **GET `/read`**: Retrieves data based on an optional query parameter `index`. If not provided, defaults to `0`. Responds with a message indicating the index being read (`{ message: `Reading submission at index ${index}` }`).
 
-Express.js
-TypeScript
-npm
-Troubleshooting
-If encountering issues, ensure Node.js and npm are up to date.
-Check package.json scripts and dependencies.
+### `routes.ts` Explanation
+
+#### Imports and Initialization
+```typescript
+import express, { Router, Request, Response } from 'express';
+import fs from 'fs';
+import path from 'path';
+
+const router = Router();
+const dbPath = path.join(__dirname, 'db.json');
+```
+- **Imports**: Imports necessary modules from `express`, `fs`, and `path`.
+- **Router Initialization**: Creates a new Express router (`router`).
+- **Database Path**: Defines the path to a JSON file (`db.json`) to store data.
+
+#### Route Definitions
+```typescript
+// /ping endpoint
+router.get('/ping', (req: Request, res: Response) => {
+  res.json(true);
+});
+
+// /submit endpoint
+router.post('/submit', (req: Request, res: Response) => {
+  const { name, email, phone, github_link, stopwatch_time } = req.body;
+
+  // Read the existing data
+  const data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+
+  // Append the new submission
+  data.push({ name, email, phone, github_link, stopwatch_time });
+
+  // Write back to the file
+  fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
+
+  res.json({ success: true });
+});
+
+// /read endpoint
+router.get('/read', (req: Request, res: Response) => {
+  const index = parseInt(req.query.index as string, 10);
+
+  // Read the existing data
+  const data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+
+  if (index >= 0 && index < data.length) {
+    res.json(data[index]);
+  } else {
+    res.status(404).json({ error: 'Index out of bounds' });
+  }
+});
+```
+- **Route Handlers**:
+  1. **`/ping`**: Responds with a JSON boolean `true`.
+  2. **`/submit`**: Handles POST requests to submit data (`name`, `email`, `phone`, `github_link`, `stopwatch_time`). Reads existing data from `db.json`, appends new submission, and writes back to the file. Responds with `{ success: true }`.
+  3. **`/read`**: Handles GET requests to read data based on an optional query parameter `index`. Reads data from `db.json`, validates the index, and responds with either the data at the specified index or a 404 error if out of bounds.
+
+#### Export
+```typescript
+export default router;
+```
+- **Exports the Router**: Exports the `router` instance to be used in other parts of the application.
+
